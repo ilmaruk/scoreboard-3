@@ -7,6 +7,7 @@
 
 #include <BoardState.hpp>
 #include <StateInterval.hpp>
+#include <StateTest.hpp>
 
 const char *ntpServer1 = "pool.ntp.org";
 const char *ntpServer2 = "time.nist.gov";
@@ -35,6 +36,7 @@ void connectToWiFi(const char *ssid, const char *pass)
 
 BoardState *currState;
 StateInterval stateInterval;
+StateTest stateTest;
 
 void setup()
 {
@@ -51,8 +53,21 @@ void setup()
   currState = &stateInterval;
 }
 
+int counter = 0;
+
 void loop()
 {
   delay(500);
   currState->update();
+
+  counter++;
+
+  if (counter == 20)
+  {
+    currState = &stateTest;
+  }
+  else if (counter == 40)
+  {
+    currState = &stateInterval;
+  }
 }
