@@ -32,46 +32,29 @@ void timeavailable(struct timeval *t)
   WiFi.mode(WIFI_OFF);
 }
 
-void setup()
+void connectToWiFi(const char *ssid, const char *pass)
 {
-  Serial.begin(115200);
-
-  // set notification call-back function
-  sntp_set_time_sync_notification_cb(timeavailable);
-
-  /**
-   * NTP server address could be aquired via DHCP,
-   *
-   * NOTE: This call should be made BEFORE esp32 aquires IP address via DHCP,
-   * otherwise SNTP option 42 would be rejected by default.
-   * NOTE: configTime() function call if made AFTER DHCP-client run
-   * will OVERRIDE aquired NTP server address
-   */
-  sntp_servermode_dhcp(1); // (optional)
-
-  /**
-   * This will set configured ntp servers and constant TimeZone/daylightOffset
-   * should be OK if your time zone does not need to adjust daylightOffset twice a year,
-   * in such a case time adjustment won't be handled automagicaly.
-   */
-  // configTime(gmtOffset_sec, daylightOffset_sec, ntpServer1, ntpServer2);
-
-  /**
-   * A more convenient approach to handle TimeZones with daylightOffset
-   * would be to specify a environmnet variable with TimeZone definition including daylight adjustmnet rules.
-   * A list of rules for your zone could be obtained from https://github.com/esp8266/Arduino/blob/master/cores/esp8266/TZ.h
-   */
-  configTzTime(time_zone, ntpServer1, ntpServer2);
-
-  // connect to WiFi
   Serial.printf("Connecting to %s ", ssid);
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, pass);
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
     Serial.print(".");
   }
   Serial.println(" CONNECTED");
+}
+
+void setup()
+{
+  Serial.begin(115200);
+
+  // set notification call-back function
+  sntp_set_time_sync_notification_cb(timeavailable);
+  sntp_servermode_dhcp(1);
+  configTzTime(time_zone, ntpServer1, ntpServer2);
+
+  // connect to WiFi
+  connectToWiFi(wifi_ssid, wifi_password);
 }
 
 void loop()
