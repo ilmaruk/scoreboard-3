@@ -5,6 +5,9 @@
 
 #include "secrets.h"
 
+#include <BoardState.hpp>
+#include <StateInterval.hpp>
+
 const char *ntpServer1 = "pool.ntp.org";
 const char *ntpServer2 = "time.nist.gov";
 const long gmtOffset_sec = 3600;
@@ -12,24 +15,10 @@ const int daylightOffset_sec = 3600;
 
 const char *time_zone = "CET-1CEST,M3.5.0,M10.5.0/3"; // TimeZone rule for Europe/Rome including daylight adjustment rules (optional)
 
-void printLocalTime()
-{
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo))
-  {
-    Serial.println("No time available (yet)");
-    return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-}
-
 // Callback function (get's called when time adjusts via NTP)
 void timeavailable(struct timeval *t)
 {
   Serial.println("Got time adjustment from NTP!");
-  printLocalTime();
-  // We can turn the WiFi off
-  WiFi.mode(WIFI_OFF);
 }
 
 void connectToWiFi(const char *ssid, const char *pass)
@@ -44,6 +33,9 @@ void connectToWiFi(const char *ssid, const char *pass)
   Serial.println(" CONNECTED");
 }
 
+BoardState *currState;
+StateInterval stateInterval;
+
 void setup()
 {
   Serial.begin(115200);
@@ -55,10 +47,12 @@ void setup()
 
   // connect to WiFi
   connectToWiFi(wifi_ssid, wifi_password);
+
+  currState = &stateInterval;
 }
 
 void loop()
 {
   delay(500);
-  printLocalTime(); // it will take some time to sync time :)
+  currState->update();
 }
